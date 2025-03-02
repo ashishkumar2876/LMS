@@ -1,7 +1,9 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import connectDB from './database/dbConnect.js';
-import userRoute from './routes/user.route.js'
+import userRoute from './routes/user.route.js';
+import courseRoute from './routes/course.route.js'
+import mediaRoute from './routes/media.route.js'
 import cors from 'cors'
 import cookieParser from 'cookie-parser';
 dotenv.config({});
@@ -20,7 +22,9 @@ app.use(cors({
 app.use(cookieParser());
 
 //api aaegi
-app.use("/api/v1/user",userRoute)
+app.use("/api/v1/user",userRoute);
+app.use("/api/v1/course",courseRoute);
+app.use("/api/v1/media",mediaRoute);
 
 app.listen(PORT,()=>{
     console.log(`Server listen on port ${PORT}`);
