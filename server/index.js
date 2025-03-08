@@ -8,6 +8,7 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser';
 import purchaseRoute from './routes/purchaseCourse.routes.js'
 import courseProgressRoute from './routes/courseProgress.route.js'
+import path from 'path';
 dotenv.config({});
 
 connectDB();
@@ -15,6 +16,8 @@ connectDB();
 const app=express();
 
 const PORT=process.env.PORT || 3000;
+
+const _dirname=path.resolve();
 
 app.use(express.json());
 app.use(cors({
@@ -31,6 +34,10 @@ app.use("/api/v1/purchase",purchaseRoute);
 app.use("/api/v1/progress",courseProgressRoute);
 
 
+app.use(express.static(path.join(_dirname,'client/dist')))
+app.get('*',(req,res)=>{
+    res.sendFile(path.resolve(_dirname,'client','dist','index.html'));
+})
 app.listen(PORT,()=>{
     console.log(`Server listen on port ${PORT}`);
 })
