@@ -39,8 +39,8 @@ export const createCheckoutSession = async (req, res) => {
         },
       ],
       mode: "payment",
-      success_url: `${process.env.FRONTEND_URL}/course-progress/${courseId}`, // once payment successful redirect to course progress page
-      cancel_url: `${process.env.FRONTEND_URL}/course-detail/${courseId}`,
+      success_url: `https://lms-1-sh7o.onrender.com/course-progress/${courseId}`, // once payment successful redirect to course progress page
+      cancel_url: `https://lms-1-sh7o.onrender.com/course-detail/${courseId}`,
       metadata: {
         courseId: courseId,
         userId: userId,
