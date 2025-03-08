@@ -50,7 +50,7 @@ const Filter = ({handleFilterChange}) => {
   return (
     <div className="w-full md:w-[20%]">
       <div className="flex items-center justify-between">
-        <h1 className="font-semibold text-lg md:text-xl">Filter Options</h1>
+        <div className="font-semibold md:font-md">Filter Options</div>
         <Select onValueChange={selectByPriceHandler}>
           <SelectTrigger>
             <SelectValue placeholder="Sort by" />

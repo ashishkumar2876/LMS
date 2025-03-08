@@ -106,22 +106,22 @@ const Navbar = () => {
       </div>
       {/* Mobile device */}
       <div className="flex md:hidden items-center justify-between px-4 h-full">
-        <h1 className="font-extrabold text-xl">E-learning</h1>
-        <MobileNavbar />
+        <h1 className="font-extrabold text-xl"><Link to='/'>E-learning</Link></h1>
+        <MobileNavbar user={user} logoutHandler={logoutHandler} />
       </div>
     </div>
   );
 };
 
 export default Navbar;
-const MobileNavbar = () => {
-  const role = "instructor";
+const MobileNavbar = ({user,logoutHandler}) => {
+  const navigate=useNavigate();
   return (
     <Sheet>
       <SheetTrigger asChild>
         <Button
           size="icon"
-          className="rounded-full bg-gray-200"
+          className="rounded-full"
           variant="outline"
         >
           <Menu />
@@ -129,20 +129,20 @@ const MobileNavbar = () => {
       </SheetTrigger>
       <SheetContent className="flex flex-col p-10">
         <SheetHeader className="flex flex-row items-center justify-between">
-          <SheetTitle>E-Learning</SheetTitle>
+          <SheetTitle><Link to='/'>E-Learning</Link></SheetTitle>
           <DarkMode />
         </SheetHeader>
         <Separator className="mr-2" />
         <nav className="flex flex-col space-y-4">
-          <span>My Learning</span>
-          <span>Edit Profile</span>
-          <span>Logout</span>
+          <Link to='/my-learning'>My Learning</Link>
+          <Link to='/profile'>Edit Profile</Link>
+          <div onClick={logoutHandler}>Logout</div>
         </nav>
 
-        {role === "instructor" && (
+        {user?.role === "instructor" && (
           <SheetFooter>
             <SheetClose asChild>
-              <Button type="submit">Dashboard</Button>
+              <Button type="submit" onClick={()=>navigate('/admin/dashboard')}>Dashboard</Button>
             </SheetClose>
           </SheetFooter>
         )}
