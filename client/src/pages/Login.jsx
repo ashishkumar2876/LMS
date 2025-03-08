@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useLoginUserMutation,
@@ -19,8 +20,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+
 const Login = () => {
-  const navigate=useNavigate();
+  const navigate = useNavigate();
   const [loginInput, setLoginInput] = useState({
     email: "",
     password: "",
@@ -29,6 +31,7 @@ const Login = () => {
     name: "",
     email: "",
     password: "",
+    role:"student"
   });
 
   const [
@@ -69,17 +72,17 @@ const Login = () => {
     await action(inputData);
   };
   useEffect(() => {
-    if(registerIsSuccess && registerData){
-      toast.success(registerData.message || "Signup successful.")
+    if (registerIsSuccess && registerData) {
+      toast.success(registerData.message || "Signup successful.");
     }
-    if(registerError){
+    if (registerError) {
       toast.error(registerError.data.message || "Signup Failed");
     }
-    if(loginIsSuccess && loginData){
+    if (loginIsSuccess && loginData) {
       toast.success(loginData.message || "Login successful.");
       navigate("/");
     }
-    if(loginError){ 
+    if (loginError) {
       toast.error(loginError.data.message || "login Failed");
     }
   }, [
@@ -141,6 +144,21 @@ const Login = () => {
                   placeholder="******"
                   required="true"
                 />
+              </div>
+              <div className="flex items-center justify-between mt-4">
+              <Label htmlFor="" className='mr-5'>Role</Label>
+                <Select onValueChange={(value)=>setSignupInput({...signupInput,role:value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Choose the role</SelectLabel>
+                      <SelectItem value="student">Student</SelectItem>
+                      <SelectItem value="instructor">Instructor</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
             <CardFooter>

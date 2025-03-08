@@ -1,5 +1,5 @@
 import { Menu, School } from "lucide-react";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "./button";
 import {
   DropdownMenu,
@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { useSelector } from "react-redux";
 
 const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const { user } = useSelector((store) => store.auth);
   const [logoutUser, { data, isSuccess }] = useLogoutUserMutation();
   const navigate = useNavigate();
@@ -56,8 +57,8 @@ const Navbar = () => {
         </div>
         <div className="flex items-center gap-8">
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+              <DropdownMenuTrigger>
                 <Avatar>
                   <AvatarImage
                     src={user.photoUrl || "https://github.com/shadcn.png"}
@@ -83,7 +84,9 @@ const Navbar = () => {
                 {user.role === "instructor" && (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>Dashboard</DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Link to='/admin/dashboard'>Dashboard</Link>
+                    </DropdownMenuItem>
                   </>
                 )}
               </DropdownMenuContent>

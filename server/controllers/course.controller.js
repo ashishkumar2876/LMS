@@ -31,9 +31,7 @@ export const createCourse = async (req,res) => {
 
 export const searchCourse = async (req,res) => {
     try {
-        const {query = "", categories = [], sortByPrice =""} = req.query;
-        console.log(categories);
-        
+        const  {query = "", categories ="", sortByPrice =""} = req.query;
         // create search query
         const searchCriteria = {
             isPublished:true,
@@ -45,8 +43,11 @@ export const searchCourse = async (req,res) => {
         }
 
         // if categories selected
-        if(categories.length > 0) {
-            searchCriteria.category = {$in: categories};
+        if (categories.length > 0) {
+            // Split the categories string into an array
+            const categoryArray = categories.split(",");
+            console.log(categoryArray); // To verify the split categories
+            searchCriteria.category = { $in: categoryArray };
         }
 
         // define sorting order
@@ -69,7 +70,6 @@ export const searchCourse = async (req,res) => {
         
     }
 }
-
 export const getPublishedCourse = async (_,res) => {
     try {
         const courses = await Course.find({isPublished:true}).populate({path:"creator", select:"name photoUrl"});
