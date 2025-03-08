@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt from 'jsonwebtoken'
 const isAuthenticated = async (req, res, next) => {
   try {
     const token = req.cookies.token;
@@ -8,7 +8,7 @@ const isAuthenticated = async (req, res, next) => {
         success: false,
       });
     }
-    const decode = jwt.verify(token, process.env.SECRET_KEY);
+    const decode = jwt.verify(token, `${process.env.SECRET_TOKEN}`);
     if (!decode) {
       return res.status(401).json({
         message: "Invalid token",

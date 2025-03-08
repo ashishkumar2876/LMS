@@ -5,7 +5,7 @@ export const generateToken = (res, user, message) => {
     {
       userId: user._id,
     },
-    process.env.SECRET_KEY,
+    `${process.env.SECRET_TOKEN}`,
     {expiresIn:'1d'}
   );
   return res.status(200).cookie("token",token,{httpOnly:true,sameSite:'strict',maxAge:24*60*60*1000}).json({
