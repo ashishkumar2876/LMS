@@ -2,7 +2,7 @@
 
 A Learning Management System (LMS) is a software application for the administration, documentation, tracking, reporting, automation, and delivery of educational courses, training programs, or learning and development programs.
 
-This repository contains the code for an LMS that helps instructors and students interact, manage courses, and track progress. It provides features such as course management, user management, content delivery, quizzes, and assessments.
+This repository contains the code for an LMS that helps instructors and students interact, manage courses, and track progress. It provides features such as course management, user management, content delivery.
 
 ## Features
 
