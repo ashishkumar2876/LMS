@@ -51,8 +51,22 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    refetch();
-  }, []);
+    refetch(); // Initial refetch
+    
+    // Refetch every 5 seconds for 30 seconds to catch new enrollments after purchase
+    const pollInterval = setInterval(() => {
+      refetch();
+    }, 5000);
+    
+    const timeout = setTimeout(() => {
+      clearInterval(pollInterval);
+    }, 30000); // Stop polling after 30 seconds
+    
+    return () => {
+      clearInterval(pollInterval);
+      clearTimeout(timeout);
+    };
+  }, [refetch]);
 
   useEffect(() => {
     if (isSuccess) {

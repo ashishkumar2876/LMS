@@ -133,7 +133,7 @@ const CourseDetail = () => {
               {purchased ? (
                 <Button onClick={handleContinueCourse} className='w-full'>Continue Course</Button>
               ) : (
-                <BuyCourseButton courseId={courseId}/>
+                <BuyCourseButton courseId={courseId} purchased={purchased}/>
               )}
             </CardFooter>
           </Card>

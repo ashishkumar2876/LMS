@@ -9,10 +9,24 @@ const MyLearning = () => {
   const myLearningCourses = [];
   const {data,isLoading,refetch}=useLoadUserQuery();
 
-  // Refetch user data when component mounts to get latest enrolled courses
+  // Refetch user data when component mounts and periodically to get latest enrolled courses
   React.useEffect(() => {
-    refetch();
-  }, []);
+    refetch(); // Initial refetch
+    
+    // Refetch every 5 seconds for 30 seconds to catch new enrollments after purchase
+    const pollInterval = setInterval(() => {
+      refetch();
+    }, 5000);
+    
+    const timeout = setTimeout(() => {
+      clearInterval(pollInterval);
+    }, 30000); // Stop polling after 30 seconds
+    
+    return () => {
+      clearInterval(pollInterval);
+      clearTimeout(timeout);
+    };
+  }, [refetch]);
 
   const myLearning=data?.user?.enrolledCourses || [];
   return (
