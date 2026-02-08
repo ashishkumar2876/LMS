@@ -21,7 +21,7 @@ const _dirname=path.resolve();
 
 app.use(express.json());
 app.use(cors({
-    origin:"https://lms-1-sh7o.onrender.com",
+    origin: "https://lms-1-sh7o.onrender.com",
     credentials:true
 }));
 app.use(cookieParser());

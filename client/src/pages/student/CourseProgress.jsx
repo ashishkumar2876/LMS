@@ -18,6 +18,11 @@ const CourseProgress = () => {
   const { data, isLoading, isError, refetch } =
     useGetCourseProgressQuery(courseId);
 
+  // Refetch when component mounts (especially after redirect from Stripe payment)
+  React.useEffect(() => {
+    refetch(); // Refetch to get latest data after payment
+  }, [courseId, refetch]);
+
   const [updateLectureProgress] = useUpdateLectureProgressMutation();
   const [
     completeCourse,

@@ -7,7 +7,12 @@ import { Link } from "react-router-dom";
 const MyLearning = () => {
 
   const myLearningCourses = [];
-  const {data,isLoading}=useLoadUserQuery();
+  const {data,isLoading,refetch}=useLoadUserQuery();
+
+  // Refetch user data when component mounts to get latest enrolled courses
+  React.useEffect(() => {
+    refetch();
+  }, []);
 
   const myLearning=data?.user?.enrolledCourses || [];
   return (

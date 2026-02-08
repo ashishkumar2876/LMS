@@ -1,7 +1,6 @@
 import Stripe from "stripe";
 import { Course } from "../models/course.model.js";
 import { CoursePurchase } from "../models/coursePurchase.model.js";
-import { Lecture } from "../models/lecture.model.js";
 import { User } from "../models/user.model.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -77,10 +76,17 @@ export const stripeWebhook = async (req, res) => {
     const payloadString = JSON.stringify(req.body, null, 2);
     const secret = process.env.WEBHOOK_ENDPOINT_SECRET;
 
-    const header = stripe.webhooks.generateTestHeaderString({
-      payload: payloadString,
-      secret,
-    });
+    // Get the signature from header (for production) or generate test header (for development)
+    const sig = req.headers['stripe-signature'];
+    let header = sig;
+
+    // If no signature in header (local development with Stripe CLI), use test header
+    if (!header) {
+      header = stripe.webhooks.generateTestHeaderString({
+        payload: payloadString,
+        secret,
+      });
+    }
 
     event = stripe.webhooks.constructEvent(payloadString, header, secret);
   } catch (error) {
@@ -108,13 +114,12 @@ export const stripeWebhook = async (req, res) => {
       }
       purchase.status = "completed";
 
-      // Make all lectures visible by setting `isPreviewFree` to true
-      if (purchase.courseId && purchase.courseId.lectures.length > 0) {
-        await Lecture.updateMany(
-          { _id: { $in: purchase.courseId.lectures } },
-          { $set: { isPreviewFree: true } }
-        );
-      }
+      // Note: Purchase status is tracked in CoursePurchase.status = "completed"
+      // Access control should be checked when displaying lectures by verifying:
+      // 1. CoursePurchase.findOne({ userId, courseId, status: "completed" })
+      // 2. User.enrolledCourses array
+      // 3. Course.enrolledStudents array
+      // Do NOT modify isPreviewFree flag - it should remain a course-level setting
 
       await purchase.save();
 
@@ -148,18 +153,34 @@ export const getCourseDetailWithPurchaseStatus = async (req, res) => {
       .populate({ path: "lectures" });
 
     const purchased = await CoursePurchase.findOne({ userId, courseId,status:'completed' });
-    console.log('value is',purchased);
 
     if (!course) {
       return res.status(404).json({ message: "course not found!" });
     }
 
+    // Filter lectures based on purchase status
+    let filteredLectures = course.lectures;
+    if (!purchased) {
+      // If not purchased, only show preview lectures (isPreviewFree: true)
+      filteredLectures = course.lectures.filter(lecture => lecture.isPreviewFree === true);
+    }
+    // If purchased, show all lectures (no filtering needed)
+
+    // Create course object with filtered lectures
+    const courseWithFilteredLectures = {
+      ...course.toObject(),
+      lectures: filteredLectures
+    };
+
     return res.status(200).json({
-      course,
+      course: courseWithFilteredLectures,
       purchased: purchased?true:false, // true if purchased, false otherwise
     });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({
+      message: "Failed to fetch course details"
+    });
   }
 };
 

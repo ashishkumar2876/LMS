@@ -1,5 +1,6 @@
 import { CourseProgress } from "../models/courseProgress.model.js";
 import { Course } from "../models/course.model.js";
+import { CoursePurchase } from "../models/coursePurchase.model.js";
 
 export const getCourseProgress = async (req, res) => {
   try {
@@ -20,11 +21,32 @@ export const getCourseProgress = async (req, res) => {
       });
     }
 
+    // Check if user has purchased the course
+    const purchased = await CoursePurchase.findOne({ 
+      userId, 
+      courseId, 
+      status: 'completed' 
+    });
+
+    // Filter lectures based on purchase status
+    let filteredLectures = courseDetails.lectures;
+    if (!purchased) {
+      // If not purchased, only show preview lectures (isPreviewFree: true)
+      filteredLectures = courseDetails.lectures.filter(lecture => lecture.isPreviewFree === true);
+    }
+    // If purchased, show all lectures (no filtering needed)
+
+    // Create course object with filtered lectures
+    const courseWithFilteredLectures = {
+      ...courseDetails.toObject(),
+      lectures: filteredLectures
+    };
+
     // Step-2 If no progress found, return course details with an empty progress
     if (!courseProgress) {
       return res.status(200).json({
         data: {
-          courseDetails,
+          courseDetails: courseWithFilteredLectures,
           progress: [],
           completed: false,
         },
@@ -34,7 +56,7 @@ export const getCourseProgress = async (req, res) => {
     // Step-3 Return the user's course progress alog with course details
     return res.status(200).json({
       data: {
-        courseDetails,
+        courseDetails: courseWithFilteredLectures,
         progress: courseProgress.lectureProgress,
         completed: courseProgress.completed,
       },

@@ -21,12 +21,29 @@ const CourseDetail = () => {
   const courseId=params.courseId;
   const navigate=useNavigate();
 
-  console.log(courseId);
-
-
-  const {data, isLoading, isError, isSuccess} = useGetCourseDetailWithStatusQuery(courseId, {
+  const {data, isLoading, isError, isSuccess, refetch} = useGetCourseDetailWithStatusQuery(courseId, {
     refetchOnMountOrArgChange: true, // Force refetch on mount or courseId change
   });
+
+  // Refetch when component mounts (especially after redirect from Stripe)
+  // Poll for purchase status update (webhook might take a few seconds)
+  React.useEffect(() => {
+    refetch(); // Initial refetch
+    
+    // Poll every 2 seconds for 10 seconds to catch webhook updates
+    const pollInterval = setInterval(() => {
+      refetch();
+    }, 2000);
+    
+    const timeout = setTimeout(() => {
+      clearInterval(pollInterval);
+    }, 10000); // Stop polling after 10 seconds
+    
+    return () => {
+      clearInterval(pollInterval);
+      clearTimeout(timeout);
+    };
+  }, [courseId, refetch]);
 
   if(isLoading){
     return <h1>Loading...</h1>
@@ -72,14 +89,18 @@ const CourseDetail = () => {
               <CardDescription>{course?.lectures?.length} lectures</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {course.lectures.map((lecture, idx) => (
-                <div key={idx} className="flex items-center gap-3 text-sm">
-                  <span>
-                    {true ? <PlayCircle size={14} /> : <Lock size={14} />}
-                  </span>
-                  <p>{lecture.lectureTitle}</p>
-                </div>
-              ))}
+              {course?.lectures && course.lectures.length > 0 ? (
+                course.lectures.map((lecture, idx) => (
+                  <div key={idx} className="flex items-center gap-3 text-sm">
+                    <span>
+                      {purchased || lecture.isPreviewFree ? <PlayCircle size={14} /> : <Lock size={14} />}
+                    </span>
+                    <p>{lecture.lectureTitle}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">No lectures available</p>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -88,12 +109,18 @@ const CourseDetail = () => {
             <CardContent>
               <div className=" flex flex-col">
                 <div className="w-full aspect-video mb-4">
-                  <ReactPlayer
-                  width="100%"
-                  height="100%"
-                  url={course.lectures[0].videoUrl}
-                  controls={true}
-                  />
+                  {course?.lectures && course.lectures.length > 0 && course.lectures[0]?.videoUrl ? (
+                    <ReactPlayer
+                      width="100%"
+                      height="100%"
+                      url={course.lectures[0].videoUrl}
+                      controls={true}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                      <p className="text-gray-500">No video available</p>
+                    </div>
+                  )}
                 </div>
                 <h1>Lecture title</h1>
                 <Separator className="my-2" />

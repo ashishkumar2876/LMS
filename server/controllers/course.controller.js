@@ -1,5 +1,6 @@
 import { Course } from "../models/course.model.js";
 import { Lecture } from "../models/lecture.model.js";
+import { CoursePurchase } from "../models/coursePurchase.model.js";
 import {deleteMediaFromCloudinary, deleteVideoFromCloudinary, uploadMedia} from "../utils/cloudinary.js";
 
 export const createCourse = async (req,res) => {
@@ -67,7 +68,10 @@ export const searchCourse = async (req,res) => {
 
     } catch (error) {
         console.log(error);
-        
+        return res.status(500).json({
+            success: false,
+            message: "Failed to search courses"
+        });
     }
 }
 export const getPublishedCourse = async (_,res) => {
@@ -204,14 +208,32 @@ export const createLecture = async (req,res) => {
 export const getCourseLecture = async (req,res) => {
     try {
         const {courseId} = req.params;
+        const userId = req.id; // From isAuthenticated middleware
+        
         const course = await Course.findById(courseId).populate("lectures");
         if(!course){
             return res.status(404).json({
                 message:"Course not found"
             })
         }
+
+        // Check if user has purchased the course
+        const purchased = await CoursePurchase.findOne({ 
+            userId, 
+            courseId, 
+            status: 'completed' 
+        });
+
+        // Filter lectures based on purchase status
+        let filteredLectures = course.lectures;
+        if (!purchased) {
+            // If not purchased, only show preview lectures (isPreviewFree: true)
+            filteredLectures = course.lectures.filter(lecture => lecture.isPreviewFree === true);
+        }
+        // If purchased, show all lectures (no filtering needed)
+
         return res.status(200).json({
-            lectures: course.lectures
+            lectures: filteredLectures
         });
 
     } catch (error) {
