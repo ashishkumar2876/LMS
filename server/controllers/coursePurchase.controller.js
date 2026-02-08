@@ -69,10 +69,22 @@ export const createCheckoutSession = async (req, res) => {
 };
 
 export const stripeWebhook = async (req, res) => {
-  console.log("=== WEBHOOK RECEIVED ===");
-  console.log("Headers:", JSON.stringify(req.headers, null, 2));
+  console.log("=== WEBHOOK HANDLER CALLED ===");
+  console.log("Request method:", req.method);
+  console.log("Request URL:", req.url);
   console.log("Body type:", typeof req.body);
+  console.log("Body is Buffer:", Buffer.isBuffer(req.body));
   console.log("Body length:", req.body?.length || 0);
+  
+  // Log first 200 chars of body for debugging (without sensitive data)
+  if (req.body) {
+    try {
+      const bodyStr = req.body.toString();
+      console.log("Body preview (first 200 chars):", bodyStr.substring(0, 200));
+    } catch (e) {
+      console.log("Could not convert body to string");
+    }
+  }
   
   let event;
 
@@ -154,9 +166,14 @@ export const stripeWebhook = async (req, res) => {
       );
     } catch (error) {
       console.error("Error handling event:", error);
-      return res.status(500).json({ message: "Internal Server Error" });
+      console.error("Error handling event:", error);
+      // Still return 200 to Stripe to prevent retries
+      return res.status(200).json({ message: "Event received but processing failed" });
     }
   }
+  
+  // Always respond to Stripe, even if event type is not handled
+  console.log("Webhook processed successfully, sending 200 response");
   res.status(200).send();
 };
 export const getCourseDetailWithPurchaseStatus = async (req, res) => {

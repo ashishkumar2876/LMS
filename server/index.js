@@ -26,7 +26,24 @@ const _dirname = path.resolve(__dirname, '..');
 
 // ⚠️ CRITICAL: Webhook route MUST be before express.json() to receive raw body
 // Stripe webhooks require raw body for signature verification
-app.post("/api/v1/purchase/webhook", express.raw({type:"application/json"}), stripeWebhook);
+
+// Test endpoint to verify webhook route is accessible
+app.get("/api/v1/purchase/webhook/test", (req, res) => {
+  res.json({ 
+    message: "Webhook endpoint is accessible",
+    timestamp: new Date().toISOString(),
+    url: req.url
+  });
+});
+
+// Stripe webhook endpoint
+app.post("/api/v1/purchase/webhook", express.raw({type:"application/json"}), (req, res) => {
+  console.log("=== WEBHOOK ROUTE HIT ===");
+  console.log("Method:", req.method);
+  console.log("URL:", req.url);
+  console.log("Headers present:", !!req.headers);
+  stripeWebhook(req, res);
+});
 
 app.use(express.json());
 app.use(cors({
