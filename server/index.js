@@ -8,6 +8,7 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser';
 import purchaseRoute from './routes/purchaseCourse.routes.js'
 import courseProgressRoute from './routes/courseProgress.route.js'
+import { stripeWebhook } from './controllers/coursePurchase.controller.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -22,6 +23,10 @@ const PORT=process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const _dirname = path.resolve(__dirname, '..');
+
+// ⚠️ CRITICAL: Webhook route MUST be before express.json() to receive raw body
+// Stripe webhooks require raw body for signature verification
+app.post("/api/v1/purchase/webhook", express.raw({type:"application/json"}), stripeWebhook);
 
 app.use(express.json());
 app.use(cors({

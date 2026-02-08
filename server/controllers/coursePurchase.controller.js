@@ -69,19 +69,32 @@ export const createCheckoutSession = async (req, res) => {
 };
 
 export const stripeWebhook = async (req, res) => {
-  console.log("Received webhook payload:", req.body);
+  console.log("=== WEBHOOK RECEIVED ===");
+  console.log("Headers:", JSON.stringify(req.headers, null, 2));
+  console.log("Body type:", typeof req.body);
+  console.log("Body length:", req.body?.length || 0);
+  
   let event;
 
   try {
     const payloadString = JSON.stringify(req.body, null, 2);
     const secret = process.env.WEBHOOK_ENDPOINT_SECRET;
 
+    if (!secret) {
+      console.error("ERROR: WEBHOOK_ENDPOINT_SECRET is not set in environment variables!");
+      return res.status(500).send("Webhook secret not configured");
+    }
+
+    console.log("Webhook secret exists:", secret ? "Yes" : "No");
+
     // Get the signature from header (for production) or generate test header (for development)
     const sig = req.headers['stripe-signature'];
+    console.log("Stripe signature header:", sig ? "Present" : "Missing");
     let header = sig;
 
     // If no signature in header (local development with Stripe CLI), use test header
     if (!header) {
+      console.log("No signature header, generating test header for local development");
       header = stripe.webhooks.generateTestHeaderString({
         payload: payloadString,
         secret,
@@ -89,8 +102,11 @@ export const stripeWebhook = async (req, res) => {
     }
 
     event = stripe.webhooks.constructEvent(payloadString, header, secret);
+    console.log("Webhook event verified successfully. Event type:", event.type);
   } catch (error) {
-    console.error("Webhook error:", error.message);
+    console.error("=== WEBHOOK VERIFICATION ERROR ===");
+    console.error("Error message:", error.message);
+    console.error("Error details:", error);
     return res.status(400).send(`Webhook error: ${error.message}`);
   }
 
